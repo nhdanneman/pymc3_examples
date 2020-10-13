@@ -4,6 +4,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pymc3 as pm
+from scipy import optimize
+
 
 
 
@@ -31,6 +33,7 @@ Y = alpha + beta[0]*X1 + beta[1]*X2 + np.random.randn(size)*sigma
 ### Estimation
 basic_model = pm.Model()
 
+
 with basic_model:
 
     # Priors for unknown model parameters
@@ -49,31 +52,32 @@ with basic_model:
     Y_obs = pm.Normal('Y_obs', mu=mu, sd=sigma, observed=Y)
 
 
-# Obtain maximum a posteriori (MAP) estimates
-### NOTE: can fail miserably in high dimensions, sparse models, multi-model posteriors, etc.
-map_estimate = pm.find_MAP(model=basic_model)
 
-# a dict of VARNAME -> Estimates
-map_estimate
+    # Obtain maximum a posteriori (MAP) estimates
+    ### NOTE: can fail miserably in high dimensions, sparse models, multi-model posteriors, etc.
+    map_estimate = pm.find_MAP(model=basic_model)
 
-### MCMC Inference
+    # a dict of VARNAME -> Estimates
+    map_estimate
 
-from scipy import optimize
+    ### MCMC Inference
 
-with basic_model:
     # draw 500 posterior samples
-    trace = pm.sample(draws=200, chains=3, cores=1)
+    trace = pm.sample(draws=100, chains=3, cores=3, mp_ctx="spawn")
+
+
 
 
 # plot some posteriors
-_ = pm.traceplot(trace)  # good mixing
+#_ = pm.traceplot(trace)  # good mixing
 
 # summary of the trace
-pm.summary(trace)  # rhatt near 1.0
+#pm.summary(trace)  # rhatt near 1.0
 
 
-
+'''
 # trying multi-core
 with basic_model:
-    # draw 500 posterior samples
-    trace = pm.sample(draws=200, chains=3, cores=3)
+# draw 500 posterior samples
+trace = pm.sample(draws=200, chains=3, cores=3)
+'''
